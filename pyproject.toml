@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "uuid7"
+version = "1.0.0"
+description = "Python full implementation of UUID version 7 spec (RFC 9562)"
+authors = ["Jesús Leganés-Combarro 'piranna' <piranna@gmail.com>"]
+license = "MIT"
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+keywords = ["UUID", "UUIDv7", "RFC 9562"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+
+[tool.poetry.group.dev.dependencies]
+coverage = "^7.6.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
