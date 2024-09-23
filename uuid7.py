@@ -318,6 +318,10 @@ class UUIDv7(UUID):
                     0 <= counter_num_bits <= 74 - unix_ts_ms_fraction_num_bits
                 ), "Invalid number of bits for the counter (monotonic random guard)"
 
+                assert timestamp is not None, (
+                    "Random is required when timestamp is provided"
+                )
+
         elif counter_num_bits:
             if counter_use_spec_recommended_num_bits:
                 assert 12 <= counter_num_bits <= 42, (
@@ -334,6 +338,10 @@ class UUIDv7(UUID):
             )
 
             if counter_num_bits:
+                assert timestamp is not None, (
+                    "Counter is required when timestamp is provided"
+                )
+
                 assert 0 < counter_step < (1 << counter_num_bits), (
                     "Invalid number of bits for the counter step"
                 )
