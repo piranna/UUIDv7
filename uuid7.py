@@ -113,6 +113,10 @@ def _compose_data(
     rand_b = data & ~(~0 << 62)
 
     # Construct the UUID7 integer
+    return _construct_uuid7_int(unix_ts_ms, rand_a, rand_b)
+
+
+def _construct_uuid7_int(unix_ts_ms, rand_a, rand_b):
     return (
         (unix_ts_ms << 80) |
         (0b0111 << 76) |  # UUID version 7
