@@ -414,9 +414,9 @@ class UUIDv7(UUID):
             if not 0 <= unix_ts_ms < 1 << 48:
                 raise ValueError('field 1 out of range (need a 48-bit value)')
             if not 0 <= rand_a < 1 << 12:
-                raise ValueError('field 1 out of range (need a 12-bit value)')
+                raise ValueError('field 2 out of range (need a 12-bit value)')
             if not 0 <= rand_b < 1 << 62:
-                raise ValueError('field 1 out of range (need a 62-bit value)')
+                raise ValueError('field 3 out of range (need a 62-bit value)')
 
             int = _construct_uuid7_int(unix_ts_ms, rand_a, rand_b)
 
