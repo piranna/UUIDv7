@@ -415,19 +415,19 @@ class UUIDv7(UUID):
         object.__setattr__(self, 'datetime', dt)
         object.__setattr__(self, 'random', random)
 
-    @ property
+    @cached_property
     def fields(self):
         return (self.unix_ts_ms, self.rand_a, self.rand_b)
 
-    @ property
+    @cached_property
     def unix_ts_ms(self):
         return self.int >> 80
 
-    @ property
+    @cached_property
     def rand_a(self):
         return self.int >> 64 & 0x0fff
 
-    @ property
+    @cached_property
     def rand_b(self):
         return self.int & ~(~0 << 62)
 
