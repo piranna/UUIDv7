@@ -433,16 +433,23 @@ class UUIDv7(UUID):
 
         assert self.version == 7
 
-        )
-
-        )
-
         # Expose the values
-        dt = datetime.fromtimestamp(
-            unix_ts_ms_with_fraction /
-            (1000 * 2**unix_ts_ms_fraction_num_bits),
-            tz=timezone.utc
+        int = (
+            self.unix_ts_ms << 74 |
+            self.rand_a << 62 |
+            self.rand_b
         )
+
+        timestamp = (
+            (int >> (74 - unix_ts_ms_fraction_num_bits)) /
+            (1000 * 2**unix_ts_ms_fraction_num_bits)
+        )
+        dt = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+
+        random_num_bits = 74 - unix_ts_ms_fraction_num_bits - counter_num_bits
+
+        counter = (int >> random_num_bits) & ~(~0 << counter_num_bits)
+        random = int & ~(~0 << random_num_bits)
 
         # HACK: We need to set the attributes directly since the UUID
         #       class doesn't allow to set them
