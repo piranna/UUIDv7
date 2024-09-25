@@ -72,7 +72,7 @@ class TestUUIDv7(TestCase):
             timestamp
         )
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValueError):
             uuid7(timestamp='outatime')
 
     def test_uuid_create_from_fields(self):

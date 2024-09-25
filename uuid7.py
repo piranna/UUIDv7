@@ -227,7 +227,7 @@ def _init_counter(counter_num_bits: int, counter_guard_seed_num_bits: int):
     return _getrandbits(counter_num_bits - counter_guard_seed_num_bits)
 
 
-def _normalize_timestamp(timestamp: None | datetime | float | int) -> int:
+def _normalize_timestamp(timestamp: None | datetime | float | int | str) -> int:
     """Normalize the timestamp to milliseconds with 12 bits fraction
 
     The timestamp can be provided as:
@@ -235,12 +235,16 @@ def _normalize_timestamp(timestamp: None | datetime | float | int) -> int:
     - `datetime`: a datetime object
     - `float`: seconds since the epoch
     - `int`: nanoseconds since the epoch
+    - `str`: a string with the timestamp in ISO 8601 format
 
     Return the timestamp in milliseconds as int with 48+12 bits fraction
     """
 
     # NOTE: For speed and prevent float rounding errors, calcs are done
     #       using bit-wise and integer operations as 48+12 bits
+
+    if isinstance(timestamp, str):  # string in ISO 8601 format to datetime
+        timestamp = datetime.fromisoformat(timestamp)
 
     if timestamp is None:
         timestamp = time_ns()  # nanoseconds as `int` since epoch
@@ -294,7 +298,7 @@ class UUIDv7(UUID):
         *,  # Keyword-only arguments
 
         # Timestamp
-        timestamp: None | datetime | float | int = None,
+        timestamp: None | datetime | float | int | str = None,
 
         # Counter
         counter=None,
