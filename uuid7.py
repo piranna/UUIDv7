@@ -116,6 +116,100 @@ def _compose_data(
     return _construct_uuid7_int(unix_ts_ms, rand_a, rand_b)
 
 
+def _compose_uuid(
+    timestamp, unix_ts_ms_fraction_num_bits, counter,
+    counter_guard_seed_num_bits, counter_num_bits, counter_step,
+    counter_use_spec_recommended_num_bits, monotonic_random, random
+):
+    # Validate the input
+    assert 0 <= unix_ts_ms_fraction_num_bits <= 12, (
+        "Invalid number of bits for the timestamp fraction"
+    )
+
+    if monotonic_random:
+        if random is None:
+            assert (
+                0 <= counter_num_bits <= 74 - unix_ts_ms_fraction_num_bits
+            ), "Invalid number of bits for the counter (monotonic random guard)"
+
+            assert timestamp is None, (
+                "Random is required when timestamp is provided"
+            )
+
+    elif counter_num_bits:
+        if counter_use_spec_recommended_num_bits:
+            assert 12 <= counter_num_bits <= 42, (
+                "Invalid number of bits for the counter"
+            )
+        else:
+            assert (
+                0 < counter_num_bits <= 74 - unix_ts_ms_fraction_num_bits
+            ), "Invalid number of bits for the counter"
+
+    if counter is None:
+        assert 0 <= counter_guard_seed_num_bits <= counter_num_bits, (
+            "Invalid number of bits for the counter guard seed"
+        )
+
+        if counter_num_bits:
+            assert timestamp is None, (
+                "Counter is required when timestamp is provided"
+            )
+
+            assert 0 < counter_step < (1 << counter_num_bits), (
+                "Invalid number of bits for the counter step"
+            )
+    else:
+        assert counter_num_bits, "counter_num_bits is required"
+        assert 0 <= counter < (1 << counter_num_bits), (
+            "Invalid number of bits for the counter"
+        )
+
+    random_num_bits = 74 - unix_ts_ms_fraction_num_bits - counter_num_bits
+
+    if random is not None:
+        assert 0 <= random < (1 << random_num_bits), (
+            "Invalid number of bits for the frozen random counter step"
+        )
+
+    # Timestamp in milliseconds (with 12 bits fraction)
+    unix_ts_ms_with_12bits_fraction = _normalize_timestamp(timestamp)
+
+    # OPTIONAL sub-milliseconds timestamp fraction
+    # Replace Leftmost Random Bits with Increased Clock Precision
+    # (Method 3)
+    unix_ts_ms_with_fraction = (
+        unix_ts_ms_with_12bits_fraction >> (
+            12 - unix_ts_ms_fraction_num_bits
+        )
+    )
+
+    # OPTIONAL carefully seeded counter
+    if timestamp is None:
+        counter, random = _calc_counter_and_random(
+            unix_ts_ms_fraction_num_bits, counter_num_bits,
+            monotonic_random, counter, counter_guard_seed_num_bits,
+            counter_step, random, unix_ts_ms_with_fraction, random_num_bits
+        )
+
+    else:
+        # Timestamp is provided, and we can't check the counter and
+        # random values for monotonicity or against collisions, so
+        # we'll use them as provided
+        if counter is None:
+            counter = _init_counter(
+                counter_num_bits, counter_guard_seed_num_bits
+            )
+
+        if random is None:
+            random = _getrandbits(random_num_bits)
+
+    return _compose_data(
+        unix_ts_ms_with_fraction, unix_ts_ms_fraction_num_bits,
+        counter, random_num_bits, random
+    )
+
+
 def _construct_uuid7_int(unix_ts_ms, rand_a, rand_b):
     return (
         (unix_ts_ms << 80) |
@@ -315,95 +409,18 @@ class UUIDv7(UUID):
     ):
         "Initialize the UUID7 class"
 
-        # Validate the input
-        assert 0 <= unix_ts_ms_fraction_num_bits <= 12, (
-            "Invalid number of bits for the timestamp fraction"
+        int = _compose_uuid(
+            timestamp, unix_ts_ms_fraction_num_bits, counter,
+            counter_guard_seed_num_bits, counter_num_bits, counter_step,
+            counter_use_spec_recommended_num_bits, monotonic_random, random
         )
-
-        if monotonic_random:
-            if random is None:
-                assert (
-                    0 <= counter_num_bits <= 74 - unix_ts_ms_fraction_num_bits
-                ), "Invalid number of bits for the counter (monotonic random guard)"
-
-                assert timestamp is not None, (
-                    "Random is required when timestamp is provided"
-                )
-
-        elif counter_num_bits:
-            if counter_use_spec_recommended_num_bits:
-                assert 12 <= counter_num_bits <= 42, (
-                    "Invalid number of bits for the counter"
-                )
-            else:
-                assert (
-                    0 < counter_num_bits <= 74 - unix_ts_ms_fraction_num_bits
-                ), "Invalid number of bits for the counter"
-
-        if counter is None:
-            assert 0 <= counter_guard_seed_num_bits <= counter_num_bits, (
-                "Invalid number of bits for the counter guard seed"
-            )
-
-            if counter_num_bits:
-                assert timestamp is not None, (
-                    "Counter is required when timestamp is provided"
-                )
-
-                assert 0 < counter_step < (1 << counter_num_bits), (
-                    "Invalid number of bits for the counter step"
-                )
-        else:
-            assert counter_num_bits, "counter_num_bits is required"
-            assert 0 <= counter < (1 << counter_num_bits), (
-                "Invalid number of bits for the counter"
-            )
-
-        random_num_bits = 74 - unix_ts_ms_fraction_num_bits - counter_num_bits
-
-        if random is not None:
-            assert 0 <= random < (1 << random_num_bits), (
-                "Invalid number of bits for the frozen random counter step"
-            )
-
-        # Timestamp in milliseconds (with 12 bits fraction)
-        unix_ts_ms_with_12bits_fraction = _normalize_timestamp(timestamp)
-
-        # OPTIONAL sub-milliseconds timestamp fraction
-        # Replace Leftmost Random Bits with Increased Clock Precision
-        # (Method 3)
-        unix_ts_ms_with_fraction = (
-            unix_ts_ms_with_12bits_fraction >> (
-                12 - unix_ts_ms_fraction_num_bits
-            )
-        )
-
-        # OPTIONAL carefully seeded counter
-        if timestamp is None:
-            counter, random = _calc_counter_and_random(
-                unix_ts_ms_fraction_num_bits, counter_num_bits,
-                monotonic_random, counter, counter_guard_seed_num_bits,
-                counter_step, random, unix_ts_ms_with_fraction, random_num_bits
-            )
-
-        else:
-            # Timestamp is provided, and we can't check the counter and
-            # random values for monotonicity or against collisions, so
-            # we'll use them as provided
-            if counter is None:
-                counter = _init_counter(
-                    counter_num_bits, counter_guard_seed_num_bits
-                )
-
-            if random is None:
-                random = _getrandbits(random_num_bits)
 
         # Generate the UUID
-        super().__init__(
-            int=_compose_data(
-                unix_ts_ms_with_fraction, unix_ts_ms_fraction_num_bits,
-                counter, random_num_bits, random
-            )
+        super().__init__(hex, bytes, int=int)
+
+
+        )
+
         )
 
         # Expose the values
