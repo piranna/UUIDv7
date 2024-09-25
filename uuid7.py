@@ -220,7 +220,6 @@ def _construct_uuid7_int(unix_ts_ms, rand_a, rand_b):
         rand_b
     )
 
-
 def _counter_method1(
     counter_num_bits, counter, counter_guard_seed_num_bits, counter_step,
     random, random_num_bits, last_counter
@@ -453,8 +452,8 @@ class UUIDv7(UUID):
 
         # HACK: We need to set the attributes directly since the UUID
         #       class doesn't allow to set them
-        object.__setattr__(self, 'counter', counter)
         object.__setattr__(self, 'datetime', dt)
+        object.__setattr__(self, 'counter', counter)
         object.__setattr__(self, 'random', random)
 
     @cached_property
