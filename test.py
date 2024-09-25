@@ -56,6 +56,46 @@ class TestUUIDv7(TestCase):
 
         self.assertIsInstance(rand_b, int)
 
+    def test_uuid_int(self):
+        "Test the creation of a UUIDv7 instance with an integer"
+        uuid_instance = uuid7(int=7 << 76 | 1 << 63)
+
+        self.assertEqual(uuid_instance.unix_ts_ms, 0)
+        self.assertEqual(uuid_instance.rand_a, 0)
+        self.assertEqual(uuid_instance.rand_b, 0)
+
+    def test_uuid_fields(self):
+        "Test the creation of a UUIDv7 instance with fields"
+        unix_ts_ms = 0
+        rand_a = 0
+        rand_b = 0
+
+        uuid_instance = uuid7(fields=(unix_ts_ms, rand_a, rand_b))
+
+        self.assertEqual(uuid_instance.unix_ts_ms, unix_ts_ms)
+        self.assertEqual(uuid_instance.rand_a, rand_a)
+        self.assertEqual(uuid_instance.rand_b, rand_b)
+
+    def test_uuid_fields_invalid(self):
+        "Test the creation of a UUIDv7 instance with invalid fields"
+        with self.assertRaises(ValueError):
+            uuid7(fields=(0, 0, 0, 0))
+
+    def test_uuid_fields_invalid_unix_ts_ms(self):
+        "Test the creation of a UUIDv7 instance with invalid fields"
+        with self.assertRaises(ValueError):
+            uuid7(fields=(-1, 0, 0))
+
+    def test_uuid_fields_invalid_rand_a(self):
+        "Test the creation of a UUIDv7 instance with invalid fields"
+        with self.assertRaises(ValueError):
+            uuid7(fields=(0, -1, 0))
+
+    def test_uuid_fields_invalid_rand_b(self):
+        "Test the creation of a UUIDv7 instance with invalid fields"
+        with self.assertRaises(ValueError):
+            uuid7(fields=(0, 0, -1))
+
     def test_uuid_timestamp_field(self):
         "Test the creation of a UUIDv7 instance with full fields"
         timestamp = datetime.now(tz=utc)
@@ -71,6 +111,9 @@ class TestUUIDv7(TestCase):
             datetime.fromtimestamp(uuid_instance.unix_ts_ms / 1000, tz=utc),
             timestamp
         )
+
+        with self.assertRaises(TypeError):
+            uuid7(timestamp=())
 
         with self.assertRaises(ValueError):
             uuid7(timestamp='outatime')
