@@ -431,6 +431,7 @@ class UUIDv7(UUID):
         # Generate the UUID
         super().__init__(hex, bytes, int=int)
 
+        assert self.version == 7
 
         )
 
