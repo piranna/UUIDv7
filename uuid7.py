@@ -24,6 +24,7 @@ License:
 """
 
 from datetime import datetime, timezone
+from functools import cached_property
 from math import floor
 from random import SystemRandom
 from time import time_ns
@@ -384,36 +385,48 @@ class UUIDv7(UUID):
     def __init__(
         self,
 
-        # Timestamp
-        unix_ts_ms_fraction_num_bits: int = 0,
-
-        # Counter
-        counter_num_bits: int = 0,
-
-        # Random
-        monotonic_random: bool = False,
+        hex=None, bytes=None, fields=None, int=None,
 
         *,  # Keyword-only arguments
 
         # Timestamp
         timestamp: None | datetime | float | int | str = None,
+        unix_ts_ms_fraction_num_bits: int = 0,
 
         # Counter
         counter=None,
         counter_guard_seed_num_bits: int = 0,
+        counter_num_bits: int = 0,
         counter_step: int = 1,
         counter_use_spec_recommended_num_bits: bool = True,
 
         # Random
+        monotonic_random: bool = False,
         random: None | int = None
     ):
         "Initialize the UUID7 class"
 
-        int = _compose_uuid(
-            timestamp, unix_ts_ms_fraction_num_bits, counter,
-            counter_guard_seed_num_bits, counter_num_bits, counter_step,
-            counter_use_spec_recommended_num_bits, monotonic_random, random
-        )
+        if fields is not None:
+            if len(fields) != 3:
+                raise ValueError('fields is not a 3-tuple')
+
+            unix_ts_ms, rand_a, rand_b, *_ = fields
+
+            if not 0 <= unix_ts_ms < 1 << 48:
+                raise ValueError('field 1 out of range (need a 48-bit value)')
+            if not 0 <= rand_a < 1 << 12:
+                raise ValueError('field 1 out of range (need a 12-bit value)')
+            if not 0 <= rand_b < 1 << 62:
+                raise ValueError('field 1 out of range (need a 62-bit value)')
+
+            int = _construct_uuid7_int(unix_ts_ms, rand_a, rand_b)
+
+        elif hex is None and bytes is None and int is None:
+            int = _compose_uuid(
+                timestamp, unix_ts_ms_fraction_num_bits, counter,
+                counter_guard_seed_num_bits, counter_num_bits, counter_step,
+                counter_use_spec_recommended_num_bits, monotonic_random, random
+            )
 
         # Generate the UUID
         super().__init__(hex, bytes, int=int)
