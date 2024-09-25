@@ -109,7 +109,7 @@ def _compose_data(
     # Split the random number into the `unix_ts_ms` and the two random
     # fields
     unix_ts_ms = data >> 74
-    rand_a = data >> 62 & 0x3ff
+    rand_a = data >> 62 & 0x0fff
     rand_b = data & ~(~0 << 62)
 
     # Construct the UUID7 integer
