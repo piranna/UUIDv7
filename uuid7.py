@@ -432,29 +432,34 @@ class UUIDv7(UUID):
 
         assert self.version == 7
 
-        # Expose the values
-        int = (
-            self.unix_ts_ms << 74 |
-            self.rand_a << 62 |
-            self.rand_b
-        )
-
-        timestamp = (
-            (int >> (74 - unix_ts_ms_fraction_num_bits)) /
-            (1000 * 2**unix_ts_ms_fraction_num_bits)
-        )
-        dt = datetime.fromtimestamp(timestamp, tz=timezone.utc)
-
+        # Expose the internal values
         random_num_bits = 74 - unix_ts_ms_fraction_num_bits - counter_num_bits
-
-        counter = (int >> random_num_bits) & ~(~0 << counter_num_bits)
-        random = int & ~(~0 << random_num_bits)
 
         # HACK: We need to set the attributes directly since the UUID
         #       class doesn't allow to set them
-        object.__setattr__(self, 'datetime', dt)
-        object.__setattr__(self, 'counter', counter)
-        object.__setattr__(self, 'random', random)
+        object.__setattr__(
+            self, 'unix_ts_ms_fraction_num_bits', unix_ts_ms_fraction_num_bits
+        )
+        object.__setattr__(self, 'counter_num_bits', counter_num_bits)
+        object.__setattr__(self, 'random_num_bits', random_num_bits)
+
+    @cached_property
+    def counter(self):
+        int = self.rand_a << 62 | self.rand_b
+
+        return (int >> self.random_num_bits) & ~(~0 << self.counter_num_bits)
+
+    @cached_property
+    def datetime(self):
+        int = self.unix_ts_ms << 12 | self.rand_a
+        unix_ts_ms_fraction_num_bits = self.unix_ts_ms_fraction_num_bits
+
+        timestamp = (
+            (int >> (12 - unix_ts_ms_fraction_num_bits)) /
+            (1000 * 2**unix_ts_ms_fraction_num_bits)
+        )
+
+        return datetime.fromtimestamp(timestamp, tz=timezone.utc)
 
     @cached_property
     def fields(self):
@@ -471,6 +476,12 @@ class UUIDv7(UUID):
     @cached_property
     def rand_b(self):
         return self.int & ~(~0 << 62)
+
+    @cached_property
+    def random(self):
+        int = self.rand_a << 62 | self.rand_b
+
+        return int & ~(~0 << self.random_num_bits)
 
 
 uuid7 = UUIDv7
