@@ -492,6 +492,22 @@ if __name__ == '__main__':
     from argparse import ArgumentParser
 
     parser = ArgumentParser(description="Generate UUIDv7 identifiers")
+    parser.add_argument(
+        '-H', '--hex', type=str,
+        help="UUIDv7 as a hexadecimal string (default: None)"
+    )
+    parser.add_argument(
+        '-B', '--bytes', type=bytes,
+        help="UUIDv7 as a bytes object (default: None)"
+    )
+    parser.add_argument(
+        '-F', '--fields', type=int, nargs=3,
+        help="UUIDv7 as a tuple of fields (default: None)"
+    )
+    parser.add_argument(
+        '-I', '--int', type=int,
+        help="UUIDv7 as an integer (default: None)"
+    )
 
     timestamp = parser.add_argument_group('Timestamp')
     timestamp.add_argument(
@@ -539,6 +555,7 @@ if __name__ == '__main__':
 
     print(
         uuid7(
+            args.hex, args.bytes, args.fields, args.int,
             timestamp=args.timestamp,
             unix_ts_ms_fraction_num_bits=args.unix_ts_ms_fraction_num_bits,
             counter=args.counter,
