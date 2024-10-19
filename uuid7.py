@@ -492,39 +492,45 @@ if __name__ == '__main__':
     from argparse import ArgumentParser
 
     parser = ArgumentParser(description="Generate UUIDv7 identifiers")
-    parser.add_argument(
+
+    timestamp = parser.add_argument_group('Timestamp')
+    timestamp.add_argument(
         '-t', '--timestamp', type=int,
         help="Timestamp in milliseconds since the epoch (default: None)"
     )
-    parser.add_argument(
+    timestamp.add_argument(
         '--unix-ts-ms-fraction-num-bits', type=int, default=0,
         help="Number of bits for the timestamp fraction (default: 0)"
     )
-    parser.add_argument(
+
+    counter = parser.add_argument_group('Counter')
+    counter.add_argument(
         '-c', '--counter', type=int,
         help="Counter value (default: None)"
     )
-    parser.add_argument(
+    counter.add_argument(
         '--counter-guard-seed-num-bits', type=int, default=0,
         help="Number of bits for the counter guard seed (default: 0)"
     )
-    parser.add_argument(
+    counter.add_argument(
         '--counter-num-bits', type=int, default=0,
         help="Number of bits for the counter (default: 0)"
     )
-    parser.add_argument(
+    counter.add_argument(
         '--counter-step', type=int, default=1,
         help="Counter step (default: 1)"
     )
-    parser.add_argument(
+    counter.add_argument(
         '--counter-use-spec-recommended-num-bits', action='store_true',
         help="Use the recommended number of bits for the counter (default: True)"
     )
-    parser.add_argument(
+
+    random = parser.add_argument_group('Random')
+    random.add_argument(
         '--monotonic-random', action='store_true',
         help="Use monotonic random (default: False)"
     )
-    parser.add_argument(
+    random.add_argument(
         '-r', '--random', type=int,
         help="Random value (default: None)"
     )
