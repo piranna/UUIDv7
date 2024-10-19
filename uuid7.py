@@ -482,20 +482,12 @@ if __name__ == '__main__':
 
     parser = ArgumentParser(description="Generate UUIDv7 identifiers")
     parser.add_argument(
-        '--unix-ts-ms-fraction-num-bits', type=int, default=0,
-        help="Number of bits for the timestamp fraction (default: 0)"
-    )
-    parser.add_argument(
-        '--counter-num-bits', type=int, default=0,
-        help="Number of bits for the counter (default: 0)"
-    )
-    parser.add_argument(
-        '--monotonic-random', action='store_true',
-        help="Use monotonic random (default: False)"
-    )
-    parser.add_argument(
         '-t', '--timestamp', type=int,
         help="Timestamp in milliseconds since the epoch (default: None)"
+    )
+    parser.add_argument(
+        '--unix-ts-ms-fraction-num-bits', type=int, default=0,
+        help="Number of bits for the timestamp fraction (default: 0)"
     )
     parser.add_argument(
         '-c', '--counter', type=int,
@@ -506,12 +498,20 @@ if __name__ == '__main__':
         help="Number of bits for the counter guard seed (default: 0)"
     )
     parser.add_argument(
+        '--counter-num-bits', type=int, default=0,
+        help="Number of bits for the counter (default: 0)"
+    )
+    parser.add_argument(
         '--counter-step', type=int, default=1,
         help="Counter step (default: 1)"
     )
     parser.add_argument(
         '--counter-use-spec-recommended-num-bits', action='store_true',
         help="Use the recommended number of bits for the counter (default: True)"
+    )
+    parser.add_argument(
+        '--monotonic-random', action='store_true',
+        help="Use monotonic random (default: False)"
     )
     parser.add_argument(
         '-r', '--random', type=int,
@@ -522,16 +522,16 @@ if __name__ == '__main__':
 
     print(
         uuid7(
-            args.unix_ts_ms_fraction_num_bits,
-            args.counter_num_bits,
-            args.monotonic_random,
             timestamp=args.timestamp,
+            unix_ts_ms_fraction_num_bits=args.unix_ts_ms_fraction_num_bits,
             counter=args.counter,
             counter_guard_seed_num_bits=args.counter_guard_seed_num_bits,
+            counter_num_bits=args.counter_num_bits,
             counter_step=args.counter_step,
             counter_use_spec_recommended_num_bits=(
                 args.counter_use_spec_recommended_num_bits
             ),
+            monotonic_random=args.monotonic_random,
             random=args.random
         )
     )
