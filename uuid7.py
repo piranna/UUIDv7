@@ -154,7 +154,7 @@ def _compose_uuid(
 
         if counter_num_bits:
             assert timestamp is None, (
-                "Counter is required when timestamp is provided"
+                "counter is required when timestamp is provided"
             )
 
             assert 0 < counter_step < (1 << counter_num_bits), (
@@ -294,7 +294,7 @@ def _counter_method2(
         return last_counter, random
 
     # Increment counter if random overflows (rollover)
-    assert counter_num_bits, "Counter is required as guard for random overflow"
+    assert counter_num_bits, "counter is required as guard for random overflow"
 
     return (
         _increment_counter(
@@ -315,7 +315,7 @@ def _increment_counter(
     counter = last_counter + counter_step
 
     # Check the counter doesn't overflow (rollover)
-    assert counter < (1 << counter_num_bits), "Counter overflow"
+    assert counter < (1 << counter_num_bits), "counter overflow"
 
     return counter
 
